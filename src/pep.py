@@ -75,7 +75,6 @@ def pep_count_real_statuses(
         requests_cache_session: requests_cache.CachedSession,
         peps_list_by_mainpage: list[dict]
 ) -> dict[str, int]:
-    statuses_total = 0
     statuses_counters = {}
     for next_pep_record in peps_list_by_mainpage:
         next_pep_num: int = next_pep_record['number']
@@ -98,10 +97,8 @@ def pep_count_real_statuses(
                           f'для статуса PEP {next_pep_num}; skipping')
             continue
         full_status = status_dd.text
-        if full_status not in statuses_counters:
-            statuses_counters[full_status] = 0
-        statuses_counters[full_status] += 1
-        statuses_total += 1
+        statuses_counters[full_status] = (statuses_counters
+                                          .get(full_status, 0) + 1)
 
         status_code = next_pep_record['status_code']
         if status_code in EXPECTED_STATUS:
@@ -113,6 +110,6 @@ def pep_count_real_statuses(
                               f'Ожидаемые статусы: [{avail_statuses_str}].\n')
                 logging.info(log_string)
 
-    statuses_counters['Total'] = statuses_total
+    statuses_counters['Total'] = sum(statuses_counters.values())
 
     return statuses_counters
